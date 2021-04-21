@@ -1,0 +1,182 @@
+import sqlite3
+
+connection = sqlite3.connect('DB.db')
+cursor = connection.cursor()
+
+#Criar tabela
+cursor.execute('''CREATE TABLE Produtos(
+               Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+               Marca VARCHAR(12),
+               Tipo VARCHAR(12),
+               Validade DATE,
+               Alcóolico BOOL,
+               Preço DEC(3,2))''')
+
+def inserir():
+  for i in range(1):
+    cursor.execute('''INSERT INTO Produtos(Marca, Tipo, Validade, Alcóolico, Preço)
+                    VALUES (?, ?, ?, ?, ?)''', (input('Qual é a marca? '), input('Qual é a tipo de bebida? '), input('Qual é a validade? '), 
+                                                input('É alcóolico? 1 para Sim e 0 para Não? '), input('Qual é o preço? ')))
+  print('Dados inseridos com sucesso')
+  connection.commit()
+
+def alterar_valores():
+  print('1 - Marca')
+  print('2 - Tipo')
+  print('3 - Validade')
+  print('4 - É alcóolico?')
+  print('5 - Preço')
+  pergunta = int(input("Escolha um tipo de dado a ser alterado: "))
+  
+  if pergunta == 1:
+    condicao = int(input('Qual código do produto deve ser alterado? '))
+    if cursor.execute('''SELECT * FROM Produtos WHERE Id ?''', condicao) == False:
+      print('Código não existe')
+    else:
+      cursor.execute('''UPDATE Produtos
+                      SET Marca = ?
+                      WHERE Id = ?''', (input('Qual a nova marca do produto? '), condicao))
+    print('Dado alterado com sucesso.')
+    connection.commit()
+
+  elif pergunta == 2:
+    condicao = int(input('Qual código do produto deve ser alterado? '))
+    cursor.execute('''UPDATE Produtos
+                      SET Tipo = ?
+                      WHERE Id = ?''', (input('Qual o novo tipo do produto? '), condicao))
+    print('Dado alterado com sucesso')
+    connection.commit()
+
+  elif pergunta == 3:
+    condicao = int(input('Qual código do produto deve ser alterado? '))
+    cursor.execute('''UPDATE Produtos
+                      SET Validade = ?
+                      WHERE Id = ?''', (input('Qual a nova validade do produto? '), condicao))
+    print('Dado alterado com sucesso')
+    connection.commit()
+
+  elif pergunta == 4:
+    condicao = int(input('Qual código do produto deve ser alterado? '))
+    cursor.execute('''UPDATE Produtos
+                      SET Alcóolico = ?
+                      WHERE Id = ?''', (input('O produto é alcóolico? 0 para Não e 1 para Sim.'), condicao))
+    print('Dado alterado com sucesso')
+    connection.commit()
+
+  elif pergunta == 5:
+    condicao = int(input('Qual código do produto deve ser alterado? '))
+    cursor.execute('''UPDATE Produtos
+                      SET Preço = ?
+                      WHERE Id = ?''', (input('Qual o novo preço do produto? '), condicao))
+    print('Dado alterado com sucesso')
+    connection.commit()
+
+def ler_tabela():
+  template = "{0:^4}|{1:^12}|{2:^12}|{3:^10}|{4:^3}|{5:^5}"
+  template_row = "{0:^4} {1:<12} {2:<12} {3:<8} {4:^9} R$ {5:<5}"
+  print(template.format("Id","Marca","Tipo","Validade","Alcóolico","Preço"))
+  for linha in cursor.execute('''SELECT * FROM Produtos'''):
+    print(template_row.format(*linha))
+
+def query():
+  template = "{0:^4}|{1:^12}|{2:^12}|{3:^10}|{4:^3}|{5:^5}"
+  template_row = "{0:^4} {1:<12} {2:<12} {3:<8} {4:^9} R$ {5:<5}"
+
+  print('1 - Marca ')
+  print('2 - Tipo ')
+  print('3 - Validade ')
+  print('4 - É alcóolico? ')
+  print('5 - Preço ')
+  pergunta = int(input('Deseja buscar os produtos por: '))
+  
+  if pergunta == 1:
+    cursor.execute('''SELECT *
+                      FROM Produtos 
+                      WHERE Marca
+                      LIKE (?)''', (input('Qual marca procura? '),))
+    print(template.format("Id","Marca","Tipo","Validade","Alcóolico","Preço"))
+    
+    for linha in cursor.fetchall():
+        print(template_row.format(*linha))
+    
+  elif pergunta == 2:
+    cursor.execute('''SELECT *
+                      FROM Produtos 
+                      WHERE Tipo
+                      LIKE (?)''', (input('Qual tipo de produto procura? '),))
+    print(template.format("Id","Marca","Tipo","Validade","Alcóolico","Preço"))
+    
+    for linha in cursor.fetchall():
+      print(template_row.format(*linha))
+
+  elif pergunta == 3:
+    cursor.execute('''SELECT *
+                      FROM Produtos 
+                      WHERE Validade
+                      LIKE (?)''', (input('Qual validade do produto procura? '),))
+    print(template.format("Id","Marca","Tipo","Validade","Alcóolico","Preço"))
+    
+    for linha in cursor.fetchall():
+        print(template_row.format(*linha))
+  
+  elif pergunta == 4:
+    cursor.execute('''SELECT *
+                      FROM Produtos 
+                      WHERE Alcóolico
+                      LIKE (?)''', int(input('O produto é alcóolico?\n 0 para não e 1 para sim. '),))
+    print(template.format("Id","Marca","Tipo","Validade","Alcóolico","Preço"))
+    
+    for linha in cursor.fetchall():
+        print(template_row.format(*linha))
+    
+  elif pergunta == 5:
+    cursor.execute('''SELECT *
+                      FROM Produtos 
+                      WHERE Preço
+                      LIKE (?)''', (input('Por qual preço procura? '),))
+    print(template.format("Id","Marca","Tipo","Validade","Alcóolico","Preço"))
+    
+    for linha in cursor.fetchall():
+        print(template_row.format(*linha))
+
+def deletar():
+  cod = input("Qual código do produto deseja deletar: ")
+  cursor.execute('''DELETE FROM Produtos
+                    WHERE Id = ?''', cod)
+  if cod == True:
+    print('Código deletado com sucesso')
+  else:
+    print('O código não existe')
+  connection.commit()
+
+def banco_de_dados():
+  print(' Tabela - Produtos')
+  print('1 - Ver todos os dados')
+  print('2 - Buscar dados')
+  print('3 - Inserir dados')
+  print('4 - Alterar dados')
+  print('5 - Deletar dados')
+  opcao = int(input('Escolha uma opção: '))
+  if opcao == 1:
+    print(' Tabela - Produtos')
+    ler_tabela()
+  elif opcao == 2:
+    try:
+      query()
+    except:
+      print('Erro ao inserir dados')
+  elif opcao == 3:
+    try:
+      inserir()
+    except:
+      print('Erro ao alterar dado')
+  elif opcao == 4:
+    try:
+      alterar_valores()
+    except:
+      print('Erro ao deletar dado')
+  elif opcao == 5:
+    try:
+      deletar()
+    except:
+      print('Erro ao buscar dado')
